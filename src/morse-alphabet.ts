@@ -45,3 +45,8 @@ export const morseAlphabet = {
   "(": "-.--.",
   ")": "-.--.-"
 };
+
+export const lampTiming = {
+  ".": 1,
+  "-": 3
+};
