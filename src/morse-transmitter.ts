@@ -1,18 +1,17 @@
-import { mapMessageToLampStateArray, validateInputMessage } from "./mappers";
+import { mapMessageToLampStateArray } from "./mappers";
+import { validateInputMessage } from "./business";
 import { LampState } from "./model";
 
-const TEMPORY_UNIT: number = 100;
+const TEMPORY_UNIT: number = 300;
 
 export class MorseTransmitter {
   private lampList: LampState[];
-  private started: boolean = false;
 
   public start = (message: string) => {
-    if (this.started) {
+    if (this.lampList && this.lampList.length > 0) {
       console.log("The transmitter is currently broadcasting");
-    }
-
-    if (!validateInputMessage(message)) {
+      return;
+    } else if (!validateInputMessage(message)) {
       console.log("Invalid format message");
       return;
     }
@@ -20,6 +19,8 @@ export class MorseTransmitter {
     this.initializeLampStateArray(message);
     this.nextStep();
   };
+
+  public onCompleted = () => {};
 
   private initializeLampStateArray = (message: string) => {
     this.lampList = mapMessageToLampStateArray(message);
@@ -32,12 +33,11 @@ export class MorseTransmitter {
       this.write(lamp);
       setTimeout(this.nextStep, lamp.time_units * TEMPORY_UNIT);
     } else {
-      this.started = false;
-      console.log("Finalized transmission");
+      this.onCompleted();
     }
   };
 
   private write = (lamp: LampState) => {
-    console.log(lamp.state, lamp.time_units * TEMPORY_UNIT + "ms");
+    console.log(lamp.state);
   };
 }

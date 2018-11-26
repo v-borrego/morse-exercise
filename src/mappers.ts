@@ -1,7 +1,11 @@
-import { morseAlphabet } from "./morse-alphabet";
-import { LampState } from "./model";
+import {
+  morseAlphabet,
+  LAMP_CODE_SEPARATOR,
+  LAMP_WORD_SEPARATOR,
+  LAMP_CHARACTER_SEPARATOR
+} from "./morse-alphabet";
 
-type morseCode = "." | "-";
+import { LampState, morseCode } from "./model";
 
 const mapCharacterToMorse = (character: string): morseCode[] =>
   (morseAlphabet[character] || "").split("");
@@ -9,9 +13,10 @@ const mapCharacterToMorse = (character: string): morseCode[] =>
 const mapWordToMorse = (word: string): string[][] =>
   word.split("").map(mapCharacterToMorse);
 
-const mapMessageToMorse = (message: string): string[][][] =>
+const mapMessageToMorseArray = (message: string): string[][][] =>
   message
     .toLowerCase()
+    .trim()
     .replace(/  +/g, " ")
     .split(" ")
     .map(mapWordToMorse);
@@ -23,36 +28,16 @@ const mapCodeToLampState = (code: morseCode): LampState[] => [
   }
 ];
 
-const CODE_SEPARATOR: LampState = {
-  state: 0,
-  time_units: 1
-};
+const mapMorseCharactersToLampState = (character: string[]): LampState[] =>
+  character.map(mapCodeToLampState).reduce(reducerCodeSeparator);
 
-const CHARACTER_SEPARATOR: LampState = {
-  state: 0,
-  time_units: 3
-};
+const mapMorseWordsToLampState = (words: string[][]): LampState[] =>
+  words.map(mapMorseCharactersToLampState).reduce(reducerCharacterSeparator);
 
-const WORD_SEPARATOR: LampState = {
-  state: 0,
-  time_units: 7
-};
-
-const mapMorseMessageToLampStateArray = (
+const mapMorseArrayToLampStateArray = (
   morseMessage: string[][][]
-): LampState[] => {
-  const result = morseMessage
-    .map(words => {
-      return words
-        .map(character => {
-          return character.map(mapCodeToLampState).reduce(reducerCodes);
-        })
-        .reduce(reducerCharacters);
-    })
-    .reduce(reducerWords);
-
-  return result;
-};
+): LampState[] =>
+  morseMessage.map(mapMorseWordsToLampState).reduce(reducerWordSeparator);
 
 const reducer = (intercalateLamp: LampState) => (x, y) => [
   ...x,
@@ -60,20 +45,11 @@ const reducer = (intercalateLamp: LampState) => (x, y) => [
   ...y
 ];
 
-const reducerCodes = reducer(CODE_SEPARATOR);
-const reducerWords = reducer(WORD_SEPARATOR);
-const reducerCharacters = reducer(CHARACTER_SEPARATOR);
+const reducerCodeSeparator = reducer(LAMP_CODE_SEPARATOR);
+const reducerWordSeparator = reducer(LAMP_WORD_SEPARATOR);
+const reducerCharacterSeparator = reducer(LAMP_CHARACTER_SEPARATOR);
 
 const mapMessageToLampStateArray = (message: string): LampState[] =>
-  mapMorseMessageToLampStateArray(mapMessageToMorse(message));
+  mapMorseArrayToLampStateArray(mapMessageToMorseArray(message));
 
-const validateInputMessage = (message: string): boolean =>
-  message && message.length > 0
-    ? !message
-        .toLowerCase()
-        .replace(/ /g, "")
-        .split("")
-        .some(x => !morseAlphabet[x])
-    : false;
-
-export { mapMessageToMorse, mapMessageToLampStateArray, validateInputMessage };
+export { mapMessageToLampStateArray };

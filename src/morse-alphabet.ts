@@ -1,3 +1,20 @@
+import { LampState } from "./model";
+
+export const LAMP_CODE_SEPARATOR: LampState = {
+  state: 0,
+  time_units: 1
+};
+
+export const LAMP_CHARACTER_SEPARATOR: LampState = {
+  state: 0,
+  time_units: 3
+};
+
+export const LAMP_WORD_SEPARATOR: LampState = {
+  state: 0,
+  time_units: 7
+};
+
 export const morseAlphabet = {
   "0": "-----",
   "1": ".----",
@@ -44,9 +61,4 @@ export const morseAlphabet = {
   "@": ".--.-.",
   "(": "-.--.",
   ")": "-.--.-"
-};
-
-export const lampTiming = {
-  ".": 1,
-  "-": 3
 };
